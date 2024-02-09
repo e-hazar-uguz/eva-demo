@@ -1,25 +1,48 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-
+import Home from '../views/front/Home.vue'
+import HiddenPage1 from '../views/front/HiddenPage1.vue'
+import Login from '../views/auth/Login.vue'
+import store from '../store'; 
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: HomeView
+    name: 'Home',
+    component: Home,
+    meta: { requiresAuth: true }
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
+    path: '/hidden-page-1',
+    name: 'HiddenPage1',
+    component: HiddenPage1,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
 ]
-
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
+
+router.beforeEach((to, from, next) => {
+  // Check if the route requires authentication
+  if (to.meta.requiresAuth) {
+    // Check if the user is authenticated
+    const isAuthenticated = store.getters.isAuthenticated;
+    if (!isAuthenticated) {
+      // If not authenticated, redirect to the login page
+      next('/login');
+    } else {
+      // If authenticated, proceed to the requested route
+      next();
+    }
+  } else {
+    // If the route doesn't require authentication, proceed as usual
+    next();
+  }
+});
 
 export default router
